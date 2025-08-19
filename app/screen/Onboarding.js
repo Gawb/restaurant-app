@@ -1,33 +1,46 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState } from "react";
 import {
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 
-const Onboarding =  ({navigation, onDone}) => {
+const USER_KEY = "first-user-data";
+
+const Onboarding = ({ navigation, onDone }) => {
   const [email, onChangeEmail] = useState("");
   const [name, onChangeName] = useState("");
   const isValid = name.trim().length > 0 && /\S+@\S+\.\S+/.test(email);
 
+
   const handleNext = async () => {
-    // 1) marca el onboarding como completado (lo hace el padre)
+    const payload = { name, email };
+    await saveUser(USER_KEY, payload);
     await onDone?.();
-    // 2) navega a Profile reemplazando la pantalla actual
-    //navigation.replace('Profile');
+  };
+
+  const saveUser = async (key, value) => {
+    try {
+      await AsyncStorage.setItem(key, JSON.stringify(value));
+      console.log("User data saved", value);
+    } catch (e) {
+      console.log('error saving user data: ', e);
+    }
   };
 
   return (
     <SafeAreaView style={styles.root}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.select({ ios: 100, android: 0 })}
         style={styles.root}
       >
         {/* HEADER */}
@@ -90,9 +103,10 @@ export default Onboarding;
 
 const styles = StyleSheet.create({
   // layout base
-  root: { flex: 1, 
-    backgroundColor: "#E9EEF2" 
-}, 
+  root: {
+    flex: 1,
+    backgroundColor: "#E9EEF2"
+  },
   header: {
     height: 100,
     backgroundColor: "#DEE5EB",
@@ -107,7 +121,7 @@ const styles = StyleSheet.create({
   // body
   body: {
     flexGrow: 1,
-    backgroundColor: "#C9D3DB", 
+    backgroundColor: "#C9D3DB",
     paddingHorizontal: 20,
     paddingTop: 32,
     paddingBottom: 60,
@@ -129,7 +143,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: "#1F2937",
-        fontSize: 20,
+    fontSize: 20,
     fontWeight: "600",
     textAlign: "center",
   },
