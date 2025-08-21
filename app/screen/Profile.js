@@ -13,7 +13,7 @@ import {
   View
 } from 'react-native';
 import { MaskedTextInput } from "react-native-mask-text";
-import { UserContext } from '../../AppEntry'; // 👈 IMPORTA EL CONTEXTO
+import { UserContext } from '../context/UserContext'; // IMPORTA EL CONTEXTO
 
 const USER_KEY = "first-user-data";
 const STORAGE_KEY = "email-notifications:v1";
@@ -254,7 +254,7 @@ export default function Profile({ onLogout }) {
       />
 
       <View style={profileStyles.checkBoxContainer}>
-        <Text style={profileStyles.titleText}>Email notifications</Text>
+        <Text style={profileStyles.titleTextCheckBox}>Email notifications</Text>
         <CheckboxSection />
       </View>
 
@@ -332,11 +332,12 @@ const profileStyles = StyleSheet.create({
   titleText: {
     fontSize: 18,
     fontWeight: "700",
-    marginBottom: 4
+    margin: 10,
   },
   sectionText: {
     color: 'grey',
-    marginLeft: 8,
+    marginLeft: 10,
+    marginBottom: 4,
   },
   input: {
     borderWidth: 1,
@@ -356,6 +357,11 @@ const profileStyles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 2,
+  },
+    titleTextCheckBox: {
+    fontSize: 18,
+    fontWeight: "700",
+    margin: 4
   },
   checkBoxText: {
     fontSize: 15,

@@ -1,10 +1,13 @@
 // AppEntry.js
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 
+import { DEFAULT_USER, UserContext } from './app/context/UserContext';
+
+import Home from './app/screen/Home';
 import Onboarding from './app/screen/Onboarding';
 import Profile from './app/screen/Profile';
 import Splash from './app/screen/Splash';
@@ -13,18 +16,11 @@ const Stack = createNativeStackNavigator();
 const KEY = 'onboardingDone';
 const USER_KEY = 'first-user-data';
 
-// 👇 Context global de usuario
-export const UserContext = createContext({
-  user: { name: '', lastName: '', email: '', phone: '', avatarUri: '' },
-  setUser: (_u) => {},
-});
-
-const DEFAULT_USER = { name: '', lastName: '', email: '', phone: '', avatarUri: '' };
-
 
 // Header avatar ahora lee del Context (no de AsyncStorage directo)
 function HeaderAvatar() {
   const { user } = useContext(UserContext);
+  const navigation = useNavigation();
 
   const getInitials = () => {
     const a = (user.name || '').trim().slice(0, 1).toUpperCase();
@@ -33,12 +29,19 @@ function HeaderAvatar() {
   };
 
   return (
-    <Pressable style={{ paddingHorizontal: 8 }} hitSlop={8} accessibilityLabel="Abrir perfil">
+    <Pressable
+      onPress={() => {
+        const current = navigation.getCurrentRoute?.()?.name;
+        if (current !== 'Profile') navigation.navigate('Profile');
+      }}
+      style={{ paddingHorizontal: 8 }}
+      hitSlop={8} accessibilityLabel="Abrir perfil"
+    >
       {user.avatarUri ? (
-        <Image source={{ uri: user.avatarUri }} style={{ width: 32, height: 32, borderRadius: 16 }} />
+        <Image source={{ uri: user.avatarUri }} style={{ width: 38, height: 38, borderRadius: 19 }} />
       ) : (
         <View style={{
-          width: 32, height: 32, borderRadius: 16, backgroundColor: '#1F2937',
+          width: 38, height: 38, borderRadius: 19, backgroundColor: '#495E57',
           alignItems: 'center', justifyContent: 'center',
         }}>
           <Text style={{ color: 'white', fontWeight: '700' }}>{getInitials()}</Text>
@@ -63,7 +66,7 @@ export default function App() {
       try {
         const raw = await AsyncStorage.getItem(USER_KEY);
         if (raw) setUser(JSON.parse(raw));
-      } catch {}
+      } catch { }
       setLoading(false);
     })();
   }, []);
@@ -78,7 +81,7 @@ export default function App() {
             headerTitleAlign: 'center',
             headerTitle: () => (
               <Image source={require('./assets/images/logo.png')}
-                     style={{ width: 120, height: 40, resizeMode: 'contain' }} />
+                style={{ width: 158, height: 68, resizeMode: 'contain' }} />
             ),
             headerRight: () => <HeaderAvatar />,
           }}
@@ -96,18 +99,21 @@ export default function App() {
               )}
             </Stack.Screen>
           ) : (
-            <Stack.Screen name="Profile">
-              {(props) => (
-                <Profile
-                  {...props}
-                  onLogout={async () => {
-                    await AsyncStorage.multiRemove([KEY, USER_KEY]);
-                    setUser(DEFAULT_USER);  
-                    setDone(false);
-                  }}
-                />
-              )}
-            </Stack.Screen>
+            <>
+              <Stack.Screen name="Home" component={Home} />
+              <Stack.Screen name="Profile">
+                {(props) => (
+                  <Profile
+                    {...props}
+                    onLogout={async () => {
+                      await AsyncStorage.multiRemove([KEY, USER_KEY]);
+                      setUser(DEFAULT_USER);
+                      setDone(false);
+                    }}
+                  />
+                )}
+              </Stack.Screen>
+            </>
           )}
         </Stack.Navigator>
       </NavigationContainer>
